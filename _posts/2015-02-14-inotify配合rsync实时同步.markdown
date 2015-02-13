@@ -68,7 +68,7 @@ rsync的传输可以走ssh的通道也可以走rsync自己的方式。如果用r
 其中data1和data2是针对要同步过来的文件的配置模块，客户端在使用rsync时要指定哪一个模块，data1或者data2或者其他自定义。
 
 然后建立密码文件并以后台模式启动rsync服务端
-```bash
+{% highlight bash %}
 echo 'rsync_user:wacai#rsync' > /etc/rsyncd/rsyncd.secrets
 chmod 600 /etc/rsyncd/rsyncd.secrets
 rsync --daemon --config=/etc/rsyncd/rsyncd.conf
@@ -78,7 +78,8 @@ rsync --daemon --config=/etc/rsyncd/rsyncd.conf
 mkdir /etc/rsync
 echo "wacai#rsync">/etc/rsync/rsync.secrets
 chmod 600 /etc/rsync/rsync.secrets
-```
+{% endhighlight %}
+
 
 
 ### 0x02 编写脚本让inotify监控文件夹然后使用rsync同步
@@ -86,7 +87,7 @@ chmod 600 /etc/rsync/rsync.secrets
 #### 在需要被同步文件的客户端，即A-server运行的脚本
 
 ##### 使用rsync自带的验证时
-```bash
+{% highlight bash %}
 #!/bin/bash
 log=/var/log/inotify-rsync.log
 src="/data_path/need_to_be/sync" #需要被同步的文件路径
@@ -100,10 +101,10 @@ FILECHANGE=${DIR}${FILE}
 echo " ${files}  was backed up via rsync" >> $log
 done
 
-```
+{% endhighlight %}
 
 ##### 使用ssh通道时
-```bash
+{% highlight bash %}
 #!/bin/bash
 log=/var/log/inotify-rsync.log
 src="/data_path/need_to_be/sync" #需要被同步的文件路径
@@ -113,7 +114,7 @@ rpath="/data/remote/backup/dir"   #远程主机上的存放此备份文件的目
 /usr/bin/rsync -vzrtopg --delete --progress $src root@$rhost:$rpath  #请先将root（或其他自定义用户）的公钥copy到远端服务器
 echo " ${files}  was backed up via rsync" >> $log
 done
-```
+{% endhighlight %}
 
 **以上两个脚本实测在rsync这一步，如果行尾加入'&'符号，可能导致rsync不断占用系统资源，拖垮整个系统。原因应该是在while循环当中没有被执行完成就被丢到后台，导致inotifywait程序发现块变更后就不断去调用rsync**
 
