@@ -69,14 +69,14 @@ rsync的传输可以走ssh的通道也可以走rsync自己的方式。如果用r
 
 然后建立密码文件并以后台模式启动rsync服务端
 
-	echo 'rsync_user:wacai#rsync' > /etc/rsyncd/rsyncd.secrets
+	echo 'rsync_user:YourOwnPasswd' > /etc/rsyncd/rsyncd.secrets
 	chmod 600 /etc/rsyncd/rsyncd.secrets
 	rsync --daemon --config=/etc/rsyncd/rsyncd.conf
 
 在客户端，即A-server上需要配置好rsync在连接时使用的密码
 
 	mkdir /etc/rsync
-	echo "wacai#rsync">/etc/rsync/rsync.secrets
+	echo "YourOwnPasswd">/etc/rsync/rsync.secrets
 	chmod 600 /etc/rsync/rsync.secrets
 
 
