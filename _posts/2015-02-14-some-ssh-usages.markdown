@@ -1,7 +1,7 @@
 ---
 layout: post
 title: some ssh usages
-data 2015-2-14 01:04:12
+date 2015-2-14 01:04:12
 tags: linux sysops
 ---
 
