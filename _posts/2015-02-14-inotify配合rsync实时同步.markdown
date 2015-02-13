@@ -10,13 +10,14 @@ tags: linux sysops
 ### 0x00 先编译安装inotify
 
 假设需要从A-server同步文件到B-server，则需要在A上安装好inotify
-```
+{% highlight bash %}
 wget http://nchc.dl.sourceforge.net/project/inotify-tools/inotify-tools/3.13/inotify-tools-3.13.tar.gz
 tar xzvf inotify-tools-3.14.tar.gz
 cd inotify-tools-3.13
 ./configure  --prefix=/data/program/inotify
 make && make install && echo ok
-```
+
+{% endhighlight %}
 
 ### 0x01 安装配置rsync
 
