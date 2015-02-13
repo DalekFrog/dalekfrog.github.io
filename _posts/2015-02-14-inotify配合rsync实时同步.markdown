@@ -68,17 +68,17 @@ rsync的传输可以走ssh的通道也可以走rsync自己的方式。如果用r
 其中data1和data2是针对要同步过来的文件的配置模块，客户端在使用rsync时要指定哪一个模块，data1或者data2或者其他自定义。
 
 然后建立密码文件并以后台模式启动rsync服务端
-{% highlight bash %}
-echo 'rsync_user:wacai#rsync' > /etc/rsyncd/rsyncd.secrets
-chmod 600 /etc/rsyncd/rsyncd.secrets
-rsync --daemon --config=/etc/rsyncd/rsyncd.conf
-```
+
+	echo 'rsync_user:wacai#rsync' > /etc/rsyncd/rsyncd.secrets
+	chmod 600 /etc/rsyncd/rsyncd.secrets
+	rsync --daemon --config=/etc/rsyncd/rsyncd.conf
+
 在客户端，即A-server上需要配置好rsync在连接时使用的密码
-```bash
-mkdir /etc/rsync
-echo "wacai#rsync">/etc/rsync/rsync.secrets
-chmod 600 /etc/rsync/rsync.secrets
-{% endhighlight %}
+
+	mkdir /etc/rsync
+	echo "wacai#rsync">/etc/rsync/rsync.secrets
+	chmod 600 /etc/rsync/rsync.secrets
+
 
 
 
