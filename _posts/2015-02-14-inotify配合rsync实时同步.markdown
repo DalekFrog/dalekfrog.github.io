@@ -10,14 +10,14 @@ tags: linux sysops
 ### 0x00 先编译安装inotify
 
 假设需要从A-server同步文件到B-server，则需要在A上安装好inotify
-{% highlight bash %}
-wget http://nchc.dl.sourceforge.net/project/inotify-tools/inotify-tools/3.13/inotify-tools-3.13.tar.gz
-tar xzvf inotify-tools-3.14.tar.gz
-cd inotify-tools-3.13
-./configure  --prefix=/data/program/inotify
-make && make install && echo ok
 
-{% endhighlight %}
+	wget http://nchc.dl.sourceforge.net/project/inotify-tools/inotify-tools/3.13/inotify-tools-3.13.tar.gz
+	tar xzvf inotify-tools-3.14.tar.gz
+	cd inotify-tools-3.13
+	./configure  --prefix=/data/program/inotify
+	make && make install && echo ok
+
+
 
 ### 0x01 安装配置rsync
 
@@ -87,34 +87,33 @@ chmod 600 /etc/rsync/rsync.secrets
 #### 在需要被同步文件的客户端，即A-server运行的脚本
 
 ##### 使用rsync自带的验证时
-{% highlight bash %}
-#!/bin/bash
-log=/var/log/inotify-rsync.log
-src="/data_path/need_to_be/sync" #需要被同步的文件路径
-rhost="192.168.X.Y" #B-server 即远程服务端的地址
-rpath="data1" #服务端定义的模块，data1或者data2或者其他自定义
-user=rsync_user
-password='--password-file=/etc/rsync/rsync.secrets'
-/data/program/inotify/bin/inotifywait -mr --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' -e modify,delete,create,attrib $src |  while read files; do
-FILECHANGE=${DIR}${FILE}
-/usr/bin/rsync -rpgovzt --delete --progress $password $src $user@$rhost::$rpath  
-echo " ${files}  was backed up via rsync" >> $log
-done
-
-{% endhighlight %}
+	
+	#!/bin/bash
+	log=/var/log/inotify-rsync.log
+	src="/data_path/need_to_be/sync" #需要被同步的文件路径
+	rhost="192.168.X.Y" #B-server 即远程服务端的地址
+	rpath="data1" #服务端定义的模块，data1或者data2或者其他自定义
+	user=rsync_user
+	password='--password-file=/etc/rsync/rsync.secrets'
+	/data/program/inotify/bin/inotifywait -mr --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' -e modify,delete,create,attrib $src |  while read files; do
+	FILECHANGE=${DIR}${FILE}
+	/usr/bin/rsync -rpgovzt --delete --progress $password $src $user@$rhost::$rpath  
+	echo " ${files}  was backed up via rsync" >> $log
+	done
+	
 
 ##### 使用ssh通道时
-{% highlight bash %}
-#!/bin/bash
-log=/var/log/inotify-rsync.log
-src="/data_path/need_to_be/sync" #需要被同步的文件路径
-rhost="192.168.X.Y" #B-server 即远程服务端的地址
-rpath="/data/remote/backup/dir"   #远程主机上的存放此备份文件的目录
-/data/program/inotify/bin/inotifywait -mr --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' -e modify,delete,create,attrib $src |  while read files; do
-/usr/bin/rsync -vzrtopg --delete --progress $src root@$rhost:$rpath  #请先将root（或其他自定义用户）的公钥copy到远端服务器
-echo " ${files}  was backed up via rsync" >> $log
-done
-{% endhighlight %}
+	
+	#!/bin/bash
+	log=/var/log/inotify-rsync.log
+	src="/data_path/need_to_be/sync" #需要被同步的文件路径
+	rhost="192.168.X.Y" #B-server 即远程服务端的地址
+	rpath="/data/remote/backup/dir"   #远程主机上的存放此备份文件的目录
+	/data/program/inotify/bin/inotifywait -mr --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' -e modify,delete,create,attrib $src |  while read files; do
+	/usr/bin/rsync -vzrtopg --delete --progress $src root@$rhost:$rpath  #请先将root（或其他自定义用户）的公钥copy到远端服务器
+	echo " ${files}  was backed up via rsync" >> $log
+	done
+
 
 **以上两个脚本实测在rsync这一步，如果行尾加入'&'符号，可能导致rsync不断占用系统资源，拖垮整个系统。原因应该是在while循环当中没有被执行完成就被丢到后台，导致inotifywait程序发现块变更后就不断去调用rsync**
 
