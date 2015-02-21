@@ -45,10 +45,10 @@ yum install -y gcc perl openssl-devel make
 		type hint;
 		file "root.hint";
 	};
-	zone "wacai.com" {
+	zone "yourdomain.com" {
 	
 		type master;
-		file "wacai.com.hosts";
+		file "yourdomain.com.hosts";
 	};
 	
 option中包含named程序的配置信息，包含域配置文件信息以及PID文件等相关。下面第一个zone配置表示"."，即根域配置文件，配置文件file"root.hint"存放在options中定义的directory目录中，即'/data/program/bind9/var/named'.其他zone配置类推
@@ -61,10 +61,10 @@ option中包含named程序的配置信息，包含域配置文件信息以及PID
 root.hint 文件内存放了所有最顶层的DNS Server 的 IP 和资料，Bind 9 DNS Server 会向这些 DNS Server 查询 Internet 内所有 Domain Name 的资料
 
 然后定义自己的域名文件
-vim /data/program/bind9/var/named/wacai.com.hosts
+vim /data/program/bind9/var/named/yourdomain.com.hosts
 
 	$TTL 86400
-	@ IN SOA wacai.com. root.wacai.com. (
+	@ IN SOA yourdomain.com. root.yourdomain.com. (
 			2012121701
 			3H
 			15M
@@ -73,9 +73,9 @@ vim /data/program/bind9/var/named/wacai.com.hosts
 			)
 	
 	@       IN      NS      192.168.6.117		#定义一条ns记录到本机，使其他机子可以使用本机查询dns
-	aaa     IN      A       1.1.1.1			#定义一条A记录，把wacai.com域中的aaa主机指向到ip：1.1.1.1
-	bbb     IN      A       2.2.2.2			#定义一条A记录，把wacai.com域中的bbb主机指向到ip：2.2.2.2
-	*       IN      A       8.8.8.8			#定义一条A记录，把wacai.com域中未定义的全部指向到ip：8.8.8.8
+	aaa     IN      A       1.1.1.1			#定义一条A记录，把yourdomain.com域中的aaa主机指向到ip：1.1.1.1
+	bbb     IN      A       2.2.2.2			#定义一条A记录，把yourdomain.com域中的bbb主机指向到ip：2.2.2.2
+	*       IN      A       8.8.8.8			#定义一条A记录，把yourdomain.com域中未定义的全部指向到ip：8.8.8.8
 
 
 开启named服务并测试相关解析
@@ -90,22 +90,22 @@ named -u named -c /data/program/bind9/etc/named.conf
 
 在其他互联的机子上测试下面命令
 
-	test@Kwindows:~$ host aaa.wacai.com 192.168.6.117
+	test@Kwindows:~$ host aaa.yourdomain.com 192.168.6.117
 	Using domain server:
 	Name: 192.168.6.117
 	Address: 192.168.6.117#53
 	Aliases:
 	
-	aaa.wacai.com has address 1.1.1.1
-	test@Kwindows:~$ host bbb.wacai.com 192.168.6.117
+	aaa.yourdomain.com has address 1.1.1.1
+	test@Kwindows:~$ host bbb.yourdomain.com 192.168.6.117
 	Using domain server:
 	Name: 192.168.6.117
 	Address: 192.168.6.117#53
 	Aliases:
 	
-	bbb.wacai.com has address 2.2.2.2
+	bbb.yourdomain.com has address 2.2.2.2
 
-可以看到在输出中已经解析出了在wacai.com.hosts文件中定义的相关域名ip
+可以看到在输出中已经解析出了在yourdomain.com.hosts文件中定义的相关域名ip
 
 
 ### 2X02 配置rndc
@@ -215,9 +215,9 @@ named -u named -c /data/program/bind9/etc/named.conf
 			type hint;
 			file "root.hint";
 		};
-		zone "wacai.com" {
+		zone "yourdomain.com" {
 			type master;
-			file "wacai.com.hosts";
+			file "yourdomain.com.hosts";
 		};
 	};
 
@@ -236,9 +236,9 @@ named -u named -c /data/program/bind9/etc/named.conf
 			type hint;
 			file "root.hint";
 		};
-		zone "wacai.com" {
+		zone "yourdomain.com" {
 			type master;
-			file "wacai.com.hosts";
+			file "yourdomain.com.hosts";
 		};
 	};
 
