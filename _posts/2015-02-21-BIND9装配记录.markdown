@@ -1,0 +1,252 @@
+BIND9安装配置记录
+===
+## 0X00解决依赖包
+
+yum install -y gcc perl openssl-devel make
+
+## 1X00编译安装bind9
+
+	wget ftp://192.168.1.248/ops_software/Packages/bind-9.10.1-P1.tar.gz
+	tar xvf bind-9.10.1-P1.tar.gz && cd bind-9.10.1-P1
+	mkdir -p /data/program/bind9
+	./configure --prefix=/data/program/bind9
+	make && make install && echo ok
+	useradd -s /sbin/nologin named
+	chown named.named -R /date/program/bind9/
+
+然后编辑/etc/profile文件将运行路径加入到环境变量,底部加入：
+
+	export PATH="$PATH:/data/program/bind9/sbin:/data/program/bind9/bin"
+
+然后source /etc/profile
+
+## 2X00 BIND9配置
+
+### 2X01配置正向解析域
+
+进入/data/program/bind9目录
+
+新建/data/program/bind9/etc/named.conf文件
+
+	options {
+		directory "/data/program/bind9/var/named";
+		port 53;
+		pid-file "/data/program/bind9/var/run/named.pid";
+		recursion no;
+		allow-query { any; };
+	};
+	zone "." {
+		type hint;
+		file "root.hint";
+	};
+	zone "wacai.com" {
+	
+		type master;
+		file "wacai.com.hosts";
+	};
+	
+option中包含named程序的配置信息，包含域配置文件信息以及PID文件等相关。下面第一个zone配置表示"."，即根域配置文件，配置文件file"root.hint"存放在options中定义的directory目录中，即'/data/program/bind9/var/named'.其他zone配置类推
+
+
+
+	mkdir /data/program/bind9/var/named
+	dig -t . >/data/program/bind9/var/named/root.hint
+
+root.hint 文件内存放了所有最顶层的DNS Server 的 IP 和资料，Bind 9 DNS Server 会向这些 DNS Server 查询 Internet 内所有 Domain Name 的资料
+
+然后定义自己的域名文件
+vim /data/program/bind9/var/named/wacai.com.hosts
+
+	$TTL 86400
+	@ IN SOA wacai.com. root.wacai.com. (
+			2012121701
+			3H
+			15M
+			1W
+			1D
+			)
+	
+	@       IN      NS      192.168.6.117		#定义一条ns记录到本机，使其他机子可以使用本机查询dns
+	aaa     IN      A       1.1.1.1			#定义一条A记录，把wacai.com域中的aaa主机指向到ip：1.1.1.1
+	bbb     IN      A       2.2.2.2			#定义一条A记录，把wacai.com域中的bbb主机指向到ip：2.2.2.2
+	*       IN      A       8.8.8.8			#定义一条A记录，把wacai.com域中未定义的全部指向到ip：8.8.8.8
+
+
+开启named服务并测试相关解析
+方便测试，先关闭iptables或者放行53端口
+
+	iptables -I INPUT -p tcp --dport 53 -j ACCEPT
+	iptables -I INPUT -p udp --dport 53 -j ACCEPT
+
+然后启动named服务
+
+named -u named -c /data/program/bind9/etc/named.conf
+
+在其他互联的机子上测试下面命令
+
+	test@Kwindows:~$ host aaa.wacai.com 192.168.6.117
+	Using domain server:
+	Name: 192.168.6.117
+	Address: 192.168.6.117#53
+	Aliases:
+	
+	aaa.wacai.com has address 1.1.1.1
+	test@Kwindows:~$ host bbb.wacai.com 192.168.6.117
+	Using domain server:
+	Name: 192.168.6.117
+	Address: 192.168.6.117#53
+	Aliases:
+	
+	bbb.wacai.com has address 2.2.2.2
+
+可以看到在输出中已经解析出了在wacai.com.hosts文件中定义的相关域名ip
+
+
+### 2X02 配置rndc
+
+		
+	[root@test bind9]# echo 'saasegfjawehfjgbhjadsghiusrbjkadsbvjk' > /tmp/random #建立随机文件
+	[root@test bind9]# rndc-confgen -r /tmp/random   #生成认证数据
+	[root@test bind9]# rndc-confgen -r /tmp/random
+	# Start of rndc.conf
+	key "rndc-key" {
+		algorithm hmac-md5;
+		secret "dev5zmpX0SN18cmRUIMVHA==";
+	};
+	
+	options {
+		default-key "rndc-key";
+		default-server 127.0.0.1;
+		default-port 953;
+	};
+	# End of rndc.conf
+	
+	# Use with the following in named.conf, adjusting the allow list as needed:
+	# key "rndc-key" {
+	#       algorithm hmac-md5;
+	#       secret "dev5zmpX0SN18cmRUIMVHA==";
+	# };
+	#
+	# controls {
+	#       inet 127.0.0.1 port 953
+	#               allow { 127.0.0.1; } keys { "rndc-key"; };
+	# };
+	# End of named.conf
+
+	
+新建/data/program/bind9/etc/rndc.conf，把上一条命令的结果中，
+
+\# Start of rndc.conf
+
+...
+
+\# End of rndc.conf
+
+之间的内容复制到里面。
+
+将其中的
+
+	key "rndc-key" {
+		algorithm hmac-md5;
+		secret "dev5zmpX0SN18cmRUIMVHA==";
+	};
+	
+	controls {
+		inet 127.0.0.1 port 953
+			allow { 127.0.0.1; } keys { "rndc-key"; };
+	};
+
+添加到/data/program/bind9/etc/named.conf文件的末尾，然后重新启动named服务
+然后测试rndc
+
+	[root@test bind9]# rndc -c /data/program/bind9/etc/rndc.conf reload
+	server reload successful
+
+看到server reload successful说明rndc配置成功
+
+### 2X03 配置bind日志
+
+在/data/program/bind9/etc/named.conf中添加如下内容:
+
+	logging {
+		channel "querylog" { file "/var/log/named/query.log" versions 5 size 500m; print-time yes;};
+		category general { querylog; };
+		category config { querylog; };
+		category resolver { querylog; };
+		category security { querylog; };
+		category xfer-in { querylog; };
+		category xfer-out { querylog; };
+		category notify { querylog; };
+		category client { querylog; };
+		category network { querylog; };
+		category update { querylog; };
+		category queries { querylog; };
+		category lame-servers { querylog; };
+	};
+
+创建日志文件并且赋予权限给named用户，重载后用tail实时查看日志刷新
+
+	mkdir  /var/log/named
+	touch  /var/log/named/query.log
+	chown named.named /var/log/named -R
+	rndc -c /data/program/bind9/etc/rndc.conf reload
+	tail -f /var/log/named/query.log
+
+另开终端或在其他机子上查询DNS，能够看到日志滚动刷新查询的信息，说明配置成功
+
+### 2X04 配置ACL模式
+
+对查询的客户端进行访问控制，
+删除/data/program/bind9/etc/named.conf中的两个zone配置，然后以下面的配置替换
+
+	acl "WC" {
+		192.168.0.0/16;
+		10.0.0.0/8;
+	};
+	view "Query" {
+		match-clients{WC;};
+		zone "." {
+			type hint;
+			file "root.hint";
+		};
+		zone "wacai.com" {
+			type master;
+			file "wacai.com.hosts";
+		};
+	};
+
+执行 rndc -c /data/program/bind9/etc/rndc.conf reload
+
+之后在其他机子上应该能够照常查询访问，把acl "WC"{...} 之中的192.168.0.0/16 改成一个我们不在其内的网段（如192.168.253.0/24）
+
+然后重新执行rndc -c /data/program/bind9/etc/rndc.conf reload
+
+在其他机子上查询相关域名，就会提示失败，REFUSED ,访问被acl拒绝了，说明acl访问控制正常工作。
+
+在named.conf中添加另一个view如下：
+
+	view "Other" {
+		zone "." {
+			type hint;
+			file "root.hint";
+		};
+		zone "wacai.com" {
+			type master;
+			file "wacai.com.hosts";
+		};
+	};
+
+保存，重载rndc
+
+	rndc -c /data/program/bind9/etc/rndc.conf reload
+
+又可以正常解析域名，tail查看日志，可以看到，named查询的是Other这个view内的域。
+所以，可以对要进行acl控制和不需要acl控制的域进行分开编写配置。
+
+### 2X05 其他配置
+
+在named.conf的options里加入
+
+	dump-file "data/cache_dump.db";   #运行rndc dumpdb导出数据
+	statistics-file "data/named_stats.txt";  #运行rndc stats导出统计信息
+
