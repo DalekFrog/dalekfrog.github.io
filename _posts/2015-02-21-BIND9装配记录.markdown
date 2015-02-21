@@ -1,5 +1,11 @@
-BIND9安装配置记录
-===
+---
+layout: post
+title: BIND9安装配置记录
+date: 2015-02-21 22:25:30
+tags: linux sysops dns
+---
+
+
 ## 0X00解决依赖包
 
 yum install -y gcc perl openssl-devel make
