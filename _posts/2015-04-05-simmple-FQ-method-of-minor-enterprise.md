@@ -1,15 +1,17 @@
 ---
 layout: post
-title: simmple-FQ-method-of-minor-enterprise
+title: simmple FQ method-of minor enterprise
 date: 2015-04-05 20:45:33
-tags: openwrt FQ 
+tags: openwrt FQ google 
 ---
 
+不知道从什么时候开始，翻墙已经成为了IT从业者必备的技能。vpn也好，代理也好，越来越难弄了，墙越来越高。
+===
 
 ### 0x001 vps 搭建ss-server服务端
 
 vps是必须的，选用shadowsocks是因为混淆协议，不像现有的vpn或者ssh协议特征明显，很容易被发现和监控。
-不多扯，我一般使用shadowsocks-libve自己编译,感觉c写的在linux上应该性能会更好。只是感觉上，具体没测试过，不清楚。
+我一般使用shadowsocks-libve自己编译,感觉c写的在linux上应该性能会更好。只是感觉上，具体没测试过，不清楚。
 
 我的服务端配置如下`cat /etc/shadowsocks/config.json`
 

@@ -2,7 +2,7 @@
 layout: post
 title: inotify配合rsync 实时同步
 date: 2015-02-14 00:32:30
-tags: linux sysops
+tags: linux ops
 ---
 
 

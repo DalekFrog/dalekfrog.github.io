@@ -5,6 +5,8 @@ date: 2015-03-01 19:30:46
 tags: linux kali 
 ---
 
+过期了，懒得改，现在都 kali 2016.1 roling 版本了。
+===
 
 ## 0x00 Before installing OS
 

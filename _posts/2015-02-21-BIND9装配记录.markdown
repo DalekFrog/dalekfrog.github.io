@@ -2,7 +2,7 @@
 layout: post
 title: BIND9安装配置记录
 date: 2015-02-21 22:25:30
-tags: linux sysops dns
+tags: linux ops dns bind
 ---
 
 
